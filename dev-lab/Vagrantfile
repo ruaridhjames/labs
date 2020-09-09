@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$init = <<-SCRIPT
+sudo apt update
+sudo apt upgrade -y
+sudo apt install git default-jre default-jdk -y
+
+sudo snap install intellij-idea-community --classic
+
+mkdir -p /home/vagrant/dev
+cd /home/vagrant/dev
+git clone https://src.thetestpeople.com/academy/loan-application.git
+cd loan-application
+
+sudo apt install -y --no-install-recommends ubuntu-desktop
+sudo apt install -y --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
+
+sudo usermod -a -G sudo vagrant
+
+sudo apt install -y firefox
+
+sudo apt install -y a11y-profile-manager-indicator ubuntu-software app-install-data-partner unity-accessibility-profiles
+sudo apt install -y network-manager-gnome gnome-power-manager gnome-system-monitor gnome-terminal snapd unity-lens-applications
+
+sudo apt install -y x11-common
+
+sudo locale-gen
+sudo localectl set-locale LANG='en_US.UTF-8'
+
+sudo shutdown -r now
+
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/bionic64"
+
+  config.vm.define "lab" do |lab|
+    lab.vm.hostname = "lab"
+    lab.vm.network "private_network", ip: "172.31.0.10"
+    lab.vm.provision "shell", inline: $init
+  end
+
+  config.vm.provider :virtualbox do |p|
+    p.gui = true
+    p.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    p.customize ["modifyvm", :id, "--draganddrop", "hosttoguest"]
+    p.customize ["modifyvm", :id, "--vram", "128"]
+    p.customize ["modifyvm", :id, "--memory", 2048]
+    p.customize ["modifyvm", :id, "--cpus", 1]
+  end
+end
+
+# sudo vim /etc/X11/Xwrapper.config and edit it to allowed_users=anybody
